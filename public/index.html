@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposa — Asisten Proposal Tugas Akhir</title>
+  <meta name="description" content="Asisten diskusi untuk menyusun proposal Tugas Akhir: latar belakang, rumusan masalah, sampai metodologi." />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar" id="sidebar" aria-label="Riwayat percakapan">
+    <div class="sidebar-head">
+      <a class="brand" href="/">
+        <img class="brand-mark" src="Iogo.png" alt="Proposa AI" width="237" height="34" />
+      </a>
+
+      <button type="button" id="sidebar-close" class="icon-btn sidebar-close" aria-label="Tutup riwayat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+
+    <button type="button" id="new-chat" class="new-chat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+      Percakapan baru
+    </button>
+
+    <nav class="history" aria-label="Daftar percakapan">
+      <p class="history-label" id="history-label">Riwayat</p>
+      <ul id="history-list" class="history-list" aria-labelledby="history-label"></ul>
+      <p id="history-empty" class="history-empty">Percakapanmu akan muncul di sini.</p>
+    </nav>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <!-- Muncul hanya saat berkas diseret ke area chat. -->
+    <div class="drop-hint" aria-hidden="true">
+      <span>Lepaskan berkas untuk melampirkan</span>
+    </div>
+
+    <header class="topbar">
+      <button
+        type="button"
+        id="sidebar-toggle"
+        class="icon-btn menu-btn"
+        aria-label="Buka riwayat percakapan"
+        aria-controls="sidebar"
+        aria-expanded="false"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      </button>
+      <p class="chat-title" id="chat-title">Percakapan baru</p>
+    </header>
+
+    <main class="app">
+      <div class="intro">
+        <h1 class="title">Pendamping menyusun proposal Tugas Akhir</h1>
+        <p class="subtitle">
+          Diskusikan latar belakang, rumusan masalah, hingga metodologi.
+          Kamu yang menulis, aku yang membantu menajamkan.
+        </p>
+      </div>
+
+      <section class="card" aria-label="Ruang diskusi proposal">
+        <div
+          id="chat-box"
+          class="chat-box"
+          role="log"
+          aria-live="polite"
+          aria-label="Riwayat percakapan"
+        ></div>
+
+        <form id="chat-form" class="composer">
+          <div id="attachment-preview" class="attachment-preview" hidden></div>
+
+          <p id="composer-note" class="composer-note" role="status" hidden></p>
+
+          <div class="composer-row">
+            <input
+              type="file"
+              id="file-input"
+              class="visually-hidden"
+              tabindex="-1"
+              multiple
+              accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf,text/plain,text/markdown,text/csv,application/json,.png,.jpg,.jpeg,.webp,.heic,.heif,.pdf,.txt,.md,.csv,.json"
+            />
+
+            <button type="button" id="attach-btn" class="icon-btn" aria-label="Lampirkan file atau foto">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11.5 12.4 19a4.6 4.6 0 0 1-6.5-6.5l7.6-7.6a3.1 3.1 0 0 1 4.4 4.4l-7.6 7.6a1.5 1.5 0 0 1-2.2-2.2l7-7" />
+              </svg>
+            </button>
+
+            <input
+              type="text"
+              id="user-input"
+              placeholder="Tanyakan soal proposalmu"
+              autocomplete="off"
+            />
+
+            <button type="submit" class="send-btn" aria-label="Kirim pesan">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <p class="footnote">Jawaban dibuat oleh AI dan bisa keliru. Verifikasi sitasi dan data sebelum dipakai.</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
