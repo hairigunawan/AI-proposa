@@ -1,79 +1,140 @@
 /* ============================================================
-   Proposa — antarmuka minimalis untuk asisten proposal Tugas Akhir
-   Semua warna dikumpulkan di :root supaya gampang diganti. Palet
-   krem hangat + terakota ala Claude; mode gelapnya mengikuti
-   pengaturan sistem lewat blok prefers-color-scheme di bawah.
+   TA Assistant — pendamping penyusunan Proposal Tugas Akhir
+
+   Semua warna lewat token di :root. Mode gelap ditulis DUA KALI:
+   sekali mengikuti setelan sistem, sekali saat tombol bulan ditekan
+   (data-theme="dark"). Kalau menambah token warna baru, ubah ketiga
+   blok itu bersamaan.
    ============================================================ */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* Permukaan */
-  --bg: #faf9f5;
-  --surface: #f5f3ec;
-  --surface-raised: #ebe8de;
+  --bg: #ffffff;
+  --surface: #f7f7f7;
+  --surface-raised: #efefef;
   --field: #ffffff;
 
   /* Garis */
-  --border: #ddd9cc;
-  --border-strong: #cbc7b8;
+  --border: #e5e5e5;
+  --border-strong: #d4d4d4;
 
   /* Teks */
-  --text: #141413;
-  --text-dim: #4d4c48;
-  --text-faint: #65645e;
+  --text: #171717;
+  --text-dim: #404040;
+  --text-faint: #575757;
 
-  /* Aksen: satu-satunya warna, terakota khas Claude. --accent untuk isian
-     (teks putih di atasnya lolos kontras AA), --focus untuk cincin dan garis. */
-  --accent: #b85736;
-  --accent-hover: #a94d2e;
-  --focus: #b85736;
-  --focus-ring: rgba(184, 87, 54, 0.22);
+  /* Aksen. Palet abu-hitam, tanpa warna sama sekali:
+     --accent isian tombol, --on-accent teks di atasnya,
+     --accent-ink ikon di atas latar halaman,
+     --accent-grad kotak berikon toga dengan --on-grad sebagai isi ikonnya. */
+  --accent: #171717;
+  --accent-hover: #0a0a0a;
+  --accent-ink: #262626;
+  --accent-soft: #f5f5f5;
+  --on-accent: #ffffff;
+  --accent-grad: linear-gradient(145deg, #525252, #171717);
+  --on-grad: #ffffff;
 
-  /* Peringatan dan galat kecil */
-  --warn: #b03a2e;
+  --focus: #171717;
+  --focus-ring: rgba(23, 23, 23, 0.18);
 
-  /* Lapisan penutup saat berkas diseret, dan bayangan laci di layar sempit */
-  --veil: rgba(250, 249, 245, 0.92);
-  --shadow-drawer: 0 0 48px rgba(20, 20, 19, 0.22);
+  /* Tanpa warna, status dan galat dibedakan lewat ketebalan nada, bukan hue.
+     Bubble galat memakai latar --warn-bg supaya tetap terbaca beda. */
+  --online: #171717;
+  --warn: #171717;
+  --warn-bg: #dcdcdc;
 
-  /* Logo berupa tulisan putih tanpa latar: dibalik jadi gelap di tema terang. */
-  --logo-filter: invert(1);
+  --veil: rgba(255, 255, 255, 0.92);
+  --shadow-drawer: 0 0 48px rgba(0, 0, 0, 0.2);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.16);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06);
 
   /* Bentuk dan ukuran */
   --radius-bubble: 16px;
-  --sidebar-width: 272px;
-  --content: 820px;
+  --sidebar-width: 300px;
+  --content: 880px;
   --gutter: 20px;
 
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-/* Mode gelap: charcoal hangat, bukan biru-hitam. Hanya token warna yang diganti. */
+/* Mode gelap mengikuti setelan sistem, kecuali tema terang dipilih manual. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #262624;
-    --surface: #1f1e1d;
-    --surface-raised: #302f2c;
-    --field: #302f2c;
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
 
-    --border: #3a3935;
-    --border-strong: #4a4944;
+    --bg: #0a0a0a;
+    --surface: #131313;
+    --surface-raised: #212121;
+    --field: #1a1a1a;
 
-    --text: #faf9f5;
-    --text-dim: #c2c0b6;
-    --text-faint: #9a9890;
+    --border: #262626;
+    --border-strong: #404040;
 
-    --focus: #e08a6a;
-    --focus-ring: rgba(224, 138, 106, 0.25);
+    --text: #f5f5f5;
+    --text-dim: #d4d4d4;
+    --text-faint: #a3a3a3;
 
-    --warn: #f0a99b;
+    /* Isian dibalik jadi terang: isian abu gelap nyaris lenyap di latar hitam. */
+    --accent: #e5e5e5;
+    --accent-hover: #ffffff;
+    --accent-ink: #d4d4d4;
+    --accent-soft: rgba(229, 229, 229, 0.12);
+    --on-accent: #0a0a0a;
+    --accent-grad: linear-gradient(145deg, #e5e5e5, #a3a3a3);
+    --on-grad: #171717;
 
-    --veil: rgba(38, 38, 36, 0.92);
-    --shadow-drawer: 0 0 48px rgba(0, 0, 0, 0.6);
+    --focus: #d4d4d4;
+    --focus-ring: rgba(212, 212, 212, 0.28);
 
-    --logo-filter: none;
+    --online: #e5e5e5;
+    --warn: #f5f5f5;
+    --warn-bg: #404040;
+
+    --veil: rgba(10, 10, 10, 0.92);
+    --shadow-drawer: 0 0 48px rgba(0, 0, 0, 0.7);
+    --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.6);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
   }
+}
+
+/* Salinan yang sama untuk mode gelap yang dipilih manual. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0a0a0a;
+  --surface: #131313;
+  --surface-raised: #212121;
+  --field: #1a1a1a;
+
+  --border: #262626;
+  --border-strong: #404040;
+
+  --text: #f5f5f5;
+  --text-dim: #d4d4d4;
+  --text-faint: #a3a3a3;
+
+  --accent: #e5e5e5;
+  --accent-hover: #ffffff;
+  --accent-ink: #d4d4d4;
+  --accent-soft: rgba(229, 229, 229, 0.12);
+  --on-accent: #0a0a0a;
+  --accent-grad: linear-gradient(145deg, #e5e5e5, #a3a3a3);
+  --on-grad: #171717;
+
+  --focus: #d4d4d4;
+  --focus-ring: rgba(212, 212, 212, 0.28);
+
+  --online: #e5e5e5;
+  --warn: #f5f5f5;
+  --warn-bg: #404040;
+
+  --veil: rgba(10, 10, 10, 0.92);
+  --shadow-drawer: 0 0 48px rgba(0, 0, 0, 0.7);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 *,
@@ -105,7 +166,40 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- Sidebar riwayat ---------- */
+.sprite {
+  display: none;
+}
+
+/* Ukuran dasar semua ikon; sebagian dikecilkan lagi di tempatnya. */
+.icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+/* Cincin fokus untuk pengguna keyboard. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
 
 .sidebar {
   flex: none;
@@ -121,83 +215,159 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 16px 25px 18px;
+  gap: 8px;
+  padding: 16px 14px 14px 16px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  /* Boleh menyempit di laci ponsel, supaya tidak menabrak tombol tutup. */
+  gap: 11px;
   min-width: 0;
   color: var(--text);
   text-decoration: none;
 }
 
-/* Logo berbentuk tulisan lebar (237×34). Lebarnya yang diatur; tingginya mengikuti
-   rasio dari atribut width/height di HTML, jadi tidak gepeng dan tidak melompat. */
+/* Kotak bergradasi abu berikon toga, dipakai ulang di topbar dan layar sapaan. */
+.brand-mark,
+.topbar-mark,
+.hero-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--accent-grad);
+  color: var(--on-grad);
+}
+
 .brand-mark {
-  display: block;
-  width: 130px;
-  max-width: 100%;
-  height: auto;
-  border-radius: 7px;
-  filter: var(--logo-filter);
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+}
+
+.brand-mark .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
 }
 
 .brand-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 0.975rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
+
+.brand-sub {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Tombol percakapan baru ---------- */
 
 .new-chat {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
-  margin: 4px 12px 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: 12px;
-  background: transparent;
-  color: var(--text);
+  margin: 2px 14px 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--accent);
+  color: var(--on-accent);
   font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.925rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease;
+  transition: background-color 0.18s ease;
 }
 
 .new-chat:hover {
-  border-color: var(--text-faint);
-  background: var(--surface-raised);
+  background: var(--accent-hover);
 }
 
-.new-chat svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
+.new-chat .icon {
+  width: 19px;
+  height: 19px;
 }
+
+/* ---------- Kotak pencarian ---------- */
+
+.search {
+  position: relative;
+  margin: 0 14px 6px;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  width: 17px;
+  height: 17px;
+  color: var(--text-faint);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search input {
+  width: 100%;
+  padding: 10px 12px 10px 37px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--field);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.search input::placeholder {
+  color: var(--text-faint);
+}
+
+.search input:focus {
+  border-color: var(--focus);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Tombol silang bawaan Chrome pada input[type=search] ikut warna tema. */
+.search input::-webkit-search-cancel-button {
+  cursor: pointer;
+  filter: grayscale(1) opacity(0.55);
+}
+
+/* ---------- Daftar riwayat ---------- */
 
 .history {
   flex: 1;
   min-height: 0;
-  padding: 4px 8px 12px;
+  padding: 6px 8px 12px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
 
+.history-group + .history-group {
+  margin-top: 10px;
+}
+
 .history-label {
   margin: 0;
-  padding: 10px 10px 6px;
+  padding: 8px 10px 5px;
   color: var(--text-faint);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
@@ -212,7 +382,7 @@ body {
 
 .history-empty {
   margin: 0;
-  padding: 6px 10px;
+  padding: 10px;
   color: var(--text-faint);
   font-size: 0.85rem;
   line-height: 1.5;
@@ -220,8 +390,8 @@ body {
 
 .history-item {
   display: flex;
-  align-items: center;
-  border-radius: 10px;
+  align-items: flex-start;
+  border-radius: 11px;
 }
 
 .history-item:hover,
@@ -231,24 +401,60 @@ body {
 
 .history-open {
   flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   min-width: 0;
   padding: 9px 10px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
-  color: var(--text-dim);
+  color: inherit;
   font-family: inherit;
-  font-size: 0.875rem;
   text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   cursor: pointer;
 }
 
-.history-item:hover .history-open,
-.history-item.is-active .history-open {
+.history-open .icon {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--text-faint);
+}
+
+.history-item.is-active .history-open .icon {
+  color: var(--accent-ink);
+}
+
+.history-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+/* Judul dan cuplikan sama-sama dipotong satu baris supaya tinggi tiap baris seragam. */
+.history-title,
+.history-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-title {
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.history-item:hover .history-title,
+.history-item.is-active .history-title {
   color: var(--text);
+}
+
+.history-preview {
+  color: var(--text-faint);
+  font-size: 0.79rem;
 }
 
 /* Outline fokus digeser ke dalam agar tidak terpotong oleh gulir daftar. */
@@ -259,9 +465,11 @@ body {
 
 .history-delete {
   flex: none;
+  display: grid;
+  place-items: center;
   width: 30px;
   height: 30px;
-  margin-right: 4px;
+  margin: 8px 4px 0 0;
   padding: 0;
   border: 0;
   border-radius: 8px;
@@ -291,25 +499,212 @@ body {
   }
 }
 
-.sidebar-note {
-  margin: 0;
-  padding: 12px 18px 16px;
+/* ---------- Identitas pemakai di kaki sidebar ---------- */
+
+.sidebar-foot {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 14px 16px;
   border-top: 1px solid var(--border);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.profile-name,
+.profile-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.profile-sub {
   color: var(--text-faint);
-  font-size: 0.72rem;
-  line-height: 1.5;
+  font-size: 0.78rem;
 }
 
-/* Hanya dipakai di layar sempit; di desktop sidebar selalu terlihat.
-   Selektornya digandakan (.icon-btn.menu-btn) agar tidak kalah oleh
-   .icon-btn { display: grid } yang ditulis lebih bawah. */
-.scrim,
-.icon-btn.sidebar-close,
-.icon-btn.menu-btn {
-  display: none;
+/* ============================================================
+   Popover: menu titik tiga dan form profil
+   ============================================================ */
+
+.popover {
+  position: absolute;
+  z-index: 40;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--bg);
+  box-shadow: var(--shadow-pop);
+  animation: pop-in 0.14s ease-out;
 }
 
-/* ---------- Panel utama ---------- */
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.menu {
+  top: calc(100% + 6px);
+  right: 0;
+}
+
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu button .icon {
+  width: 17px;
+  height: 17px;
+  color: var(--text-faint);
+}
+
+.menu button:hover:not(:disabled) {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.menu button:disabled {
+  color: var(--text-faint);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.menu button.is-danger,
+.menu button.is-danger .icon {
+  color: var(--warn);
+}
+
+.menu hr {
+  height: 1px;
+  margin: 5px 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.menu-wrap {
+  position: relative;
+}
+
+/* Form profil muncul di atas kaki sidebar. */
+.profile-popover {
+  right: 12px;
+  bottom: calc(100% - 4px);
+  left: 12px;
+  padding: 12px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--field);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.field input:focus {
+  border-color: var(--focus);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.popover-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-ghost,
+.btn-solid {
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-ghost {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.btn-solid {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-solid:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* ============================================================
+   Panel utama
+   ============================================================ */
 
 .main {
   position: relative;
@@ -320,107 +715,272 @@ body {
   height: 100%;
 }
 
+/* ---------- Topbar ---------- */
+
 .topbar {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 56px;
-  padding: 0 var(--gutter);
+  gap: 11px;
+  padding: 11px var(--gutter);
   border-bottom: 1px solid var(--border);
 }
 
-.chat-title {
+.topbar-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.topbar-mark .icon {
+  width: 23px;
+  height: 23px;
+}
+
+.topbar-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-title {
   margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 1px 0 0;
+  min-width: 0;
+  color: var(--text-faint);
+  font-size: 0.82rem;
+}
+
+.topbar-status .dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--online);
+}
+
+.topbar-status .sep {
+  flex: none;
+}
+
+/* Nama percakapan aktif; dipotong kalau kepanjangan. */
+#chat-title {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.topbar-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Hanya satu dari dua ikon tema yang tampil, tergantung tema aktif. */
+.icon-sun {
+  display: none;
+}
+
+:root[data-theme='dark'] .icon-moon {
+  display: none;
+}
+
+:root[data-theme='dark'] .icon-sun {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .icon-moon {
+    display: none;
+  }
+
+  :root:not([data-theme='light']) .icon-sun {
+    display: block;
+  }
+}
+
+/* ---------- Area gulir ---------- */
 
 .app {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  /* Cadangan untuk layar sangat pendek: menggulir alih-alih terpotong. */
-  overflow-y: auto;
 }
 
-.intro {
-  /* margin auto memusatkan sapaan + kolom input secara vertikal tanpa
-     memotong bagian atas ketika isinya melebihi tinggi layar. */
-  margin-top: auto;
-  width: 100%;
-  max-width: calc(var(--content) + var(--gutter) * 2);
-  margin-inline: auto;
-  padding: 0 var(--gutter) 28px;
-}
-
-.title {
-  margin: 0 0 10px;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-}
-
-.subtitle {
-  max-width: 58ch;
-  margin: 0;
-  color: var(--text-dim);
-  font-size: 0.95rem;
-  line-height: 1.65;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
+.scroller {
+  flex: 1;
   min-height: 0;
-  margin-bottom: auto;
-}
-
-/* ---------- Daftar pesan ---------- */
-
-/* Kotak pesan selebar dan setinggi panel; isinya dijaga tetap pada kolom
-   yang nyaman dibaca dengan padding yang menyesuaikan lebar layar. */
-.chat-box {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height: 60vh;
-  padding: 28px max(var(--gutter), calc((100% - var(--content)) / 2)) 12px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
 
-/* Sebelum ada pesan, area ini cukup berisi kolom input saja. */
-.chat-box:empty {
-  display: none;
-}
-
-.chat-box::-webkit-scrollbar {
+.scroller::-webkit-scrollbar {
   width: 10px;
 }
 
-.chat-box::-webkit-scrollbar-thumb {
+.scroller::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
   background-clip: content-box;
   background-color: var(--border-strong);
 }
 
+/* Layar sapaan ditengahkan secara vertikal. Pakai margin auto, bukan
+   justify-content, supaya bagian atasnya tidak terpotong di layar pendek. */
+.app:not(.has-messages) .scroller {
+  display: flex;
+  flex-direction: column;
+}
+
+.app:not(.has-messages) .intro {
+  margin-block: auto;
+}
+
+/* Layar sapaan menyingkir begitu percakapan punya pesan, dan sebaliknya. */
+.app.has-messages .intro {
+  display: none;
+}
+
+.app:not(.has-messages) .chat-box {
+  display: none;
+}
+
+/* ---------- Layar sapaan ---------- */
+
+.intro {
+  max-width: calc(var(--content) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding: 34px var(--gutter) 24px;
+  text-align: center;
+}
+
+.hero-mark {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 22px;
+  border-radius: 23px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.hero-mark .icon {
+  width: 42px;
+  height: 42px;
+}
+
+.title {
+  margin: 0 0 12px;
+  font-size: clamp(1.45rem, 3.2vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  max-width: 60ch;
+  margin: 0 auto;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+/* ---------- Kartu saran ---------- */
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 30px;
+  text-align: left;
+}
+
+.suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--bg);
+  box-shadow: var(--shadow-card);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.suggestion:hover {
+  border-color: var(--accent-ink);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.suggestion-icon .icon {
+  width: 21px;
+  height: 21px;
+}
+
+.suggestion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.suggestion-title {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.suggestion-desc {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Pesan
+   ============================================================ */
+
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: calc(var(--content) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding: 26px var(--gutter) 12px;
+}
+
 .message {
   max-width: 85%;
-  padding: 10px 14px;
+  padding: 11px 15px;
   border-radius: var(--radius-bubble);
   font-size: 0.9375rem;
-  line-height: 1.6;
+  line-height: 1.65;
   /* Menjaga baris baru dari jawaban bot tetap terlihat sebagai baris terpisah. */
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -431,7 +991,7 @@ body {
   align-self: flex-end;
   border-bottom-right-radius: 5px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .message.bot {
@@ -441,8 +1001,15 @@ body {
   color: var(--text);
 }
 
+/* Tanpa warna merah, galat dibedakan lewat latar yang lebih pekat. */
 .message.bot.is-error {
+  background: var(--warn-bg);
   color: var(--warn);
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ---------- Penanda "sedang berpikir" ---------- */
@@ -468,7 +1035,7 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-ink);
   animation: thinking-wave 1.3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
@@ -533,48 +1100,86 @@ body {
   to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
-@keyframes appear {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ============================================================
+   Komposer
+   ============================================================ */
+
+.composer-wrap {
+  flex: none;
+  width: 100%;
+  max-width: calc(var(--content) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding: 0 var(--gutter);
 }
 
-/* ---------- Komposer ---------- */
+/* ---------- Pintasan pertanyaan ---------- */
+
+.quick-chips {
+  display: flex;
+  gap: 8px;
+  padding: 10px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.quick-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-chip {
+  flex: none;
+  padding: 7px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+}
+
+.quick-chip:hover {
+  border-color: var(--accent-ink);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+/* ---------- Kolom input ---------- */
 
 .composer {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
-  max-width: calc(var(--content) + var(--gutter) * 2);
-  margin-inline: auto;
-  padding: 6px var(--gutter) 10px;
 }
 
 .composer.is-busy {
   opacity: 0.65;
 }
 
-/* Kotak input: di sinilah cincin fokus ditampilkan. */
 .composer-row {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 5px 5px 8px;
+  padding: 6px 6px 6px 9px;
   border: 1px solid var(--border-strong);
-  border-radius: 18px;
+  border-radius: 17px;
   background: var(--field);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .composer-row:focus-within {
   border-color: var(--focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .composer input[type='text'] {
   flex: 1;
   min-width: 0;
-  padding: 11px 8px;
+  padding: 12px 8px;
   border: 0;
+  /* Fokusnya ditampilkan oleh cincin pada .composer-row. */
   outline: none;
   background: transparent;
   color: var(--text);
@@ -605,20 +1210,9 @@ body {
   transition: background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 }
 
-.icon-btn svg,
-.send-btn svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .icon-btn {
   background: transparent;
-  color: var(--text-dim);
+  color: var(--text-faint);
 }
 
 .icon-btn:hover:not(:disabled) {
@@ -628,7 +1222,7 @@ body {
 
 .send-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .send-btn:hover:not(:disabled) {
@@ -639,23 +1233,17 @@ body {
   opacity: 0.45;
 }
 
-/* Cincin fokus untuk pengguna keyboard pada semua kontrol. */
-a:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+/* Tombol mikrofon saat sedang merekam. */
+#mic-btn.is-recording {
+  background: var(--accent);
+  color: var(--on-accent);
+  animation: mic-pulse 1.4s ease-in-out infinite;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
+/* Denyutnya memakai warna isian tombol, jadi ikut terbalik di mode gelap. */
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--focus-ring); }
+  50% { box-shadow: 0 0 0 7px transparent; }
 }
 
 /* Catatan kecil saat lampiran ditolak */
@@ -667,7 +1255,18 @@ button:focus-visible {
   line-height: 1.5;
 }
 
-/* ---------- Pratinjau lampiran sebelum dikirim ---------- */
+.footnote {
+  margin: 0;
+  padding: 9px var(--gutter) 14px;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ============================================================
+   Lampiran
+   ============================================================ */
 
 .attachment-preview {
   display: flex;
@@ -718,10 +1317,10 @@ button:focus-visible {
 .chip-name {
   max-width: 16ch;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--text);
   font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chip-size {
@@ -764,11 +1363,10 @@ button:focus-visible {
 
 .msg-image {
   display: block;
-  width: 0px;
-  max-width: 100%;
-  height: auto;
-  border-radius: 7px;
-  filter: var(--logo-filter);
+  max-width: 220px;
+  max-height: 260px;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
 .msg-file {
@@ -777,14 +1375,15 @@ button:focus-visible {
   gap: 8px;
   padding: 5px 12px 5px 5px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.22);
+  /* Abu tembus pandang: sama-sama terbaca di bubble terang maupun gelap. */
+  background: rgba(128, 128, 128, 0.26);
 }
 
 .msg-file .chip-icon {
   width: 28px;
   height: 28px;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: rgba(128, 128, 128, 0.3);
+  color: inherit;
 }
 
 .msg-file .chip-name {
@@ -812,48 +1411,24 @@ button:focus-visible {
 
 .drop-hint span {
   padding: 12px 22px;
-  border: 1px dashed var(--focus);
+  border: 1px dashed var(--accent-ink);
   border-radius: 14px;
   color: var(--text);
   font-size: 0.9rem;
 }
 
-/* ---------- Catatan kaki ---------- */
+/* ============================================================
+   Tablet dan ponsel: sidebar menjadi laci
+   ============================================================ */
 
-.footnote {
-  flex: none;
-  margin: 0;
-  padding: 2px var(--gutter) 14px;
-  color: var(--text-faint);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  text-align: center;
+/* Hanya dipakai di layar sempit; di desktop sidebar selalu terlihat.
+   Selektornya digandakan (.icon-btn.menu-btn) agar tidak kalah oleh
+   .icon-btn { display: grid } yang ditulis lebih atas. */
+.scrim,
+.icon-btn.sidebar-close,
+.icon-btn.menu-btn {
+  display: none;
 }
-
-/* ---------- Mode percakapan ---------- */
-
-/* Begitu ada pesan, sapaan disingkirkan dan kotak pesan mengisi seluruh tinggi
-   panel; hanya daftar pesannya yang menggulir. Browser yang belum mengenal
-   :has() tetap mendapat tata letak dasar di atas. */
-@supports selector(:has(*)) {
-  .app:has(.message) .intro {
-    display: none;
-  }
-
-  .app:has(.message) .card {
-    flex: 1 1 0;
-    min-height: 260px;
-    margin-bottom: 0;
-  }
-
-  .app:has(.message) .chat-box {
-    flex: 1;
-    min-height: 0;
-    max-height: none;
-  }
-}
-
-/* ---------- Tablet dan ponsel: sidebar menjadi laci ---------- */
 
 @media (max-width: 820px) {
   :root {
@@ -869,7 +1444,7 @@ button:focus-visible {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 30;
-    width: min(84vw, 300px);
+    width: min(86vw, 320px);
     transform: translateX(-100%);
     /* visibility mencabut isi laci dari urutan Tab saat tertutup. */
     visibility: hidden;
@@ -900,31 +1475,53 @@ button:focus-visible {
   }
 
   .topbar {
+    gap: 9px;
     padding-left: 8px;
   }
-}
 
-/* ---------- Layar sempit ---------- */
+  /* Ikon toga di topbar memakan ruang yang dibutuhkan judul di layar sempit. */
+  .topbar-mark {
+    display: none;
+  }
+}
 
 @media (max-width: 560px) {
   :root {
     --radius-bubble: 15px;
   }
 
+  .intro {
+    padding-top: 24px;
+  }
+
+  .hero-mark {
+    width: 66px;
+    height: 66px;
+    margin-bottom: 18px;
+    border-radius: 20px;
+  }
+
+  .hero-mark .icon {
+    width: 36px;
+    height: 36px;
+  }
+
   .subtitle {
     font-size: 0.9rem;
   }
 
-  .chat-box {
-    padding: 18px var(--gutter) 8px;
+  .suggestions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .suggestion {
+    padding: 14px;
   }
 
   .message {
     max-width: 90%;
-  }
-
-  .composer {
-    padding-bottom: 8px;
   }
 
   .chip-name {
@@ -932,9 +1529,8 @@ button:focus-visible {
   }
 
   .msg-image {
-    width: 130px;
-    max-width: 100%;
-    height: auto;
+    max-width: 160px;
+    max-height: 200px;
   }
 }
 
@@ -947,5 +1543,9 @@ button:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .suggestion:hover {
+    transform: none;
   }
 }

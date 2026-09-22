@@ -1,8 +1,15 @@
+/* ============================================================
+   TA Assistant — logika antarmuka
+   ============================================================ */
+
 const form = document.getElementById('chat-form');
 const input = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
+const scroller = document.getElementById('scroller');
+const app = document.getElementById('app');
 const fileInput = document.getElementById('file-input');
 const attachBtn = document.getElementById('attach-btn');
+const micBtn = document.getElementById('mic-btn');
 const previewBar = document.getElementById('attachment-preview');
 const note = document.getElementById('composer-note');
 const mainPane = document.querySelector('.main');
@@ -11,9 +18,32 @@ const sidebarToggle = document.getElementById('sidebar-toggle');
 const sidebarClose = document.getElementById('sidebar-close');
 const scrim = document.getElementById('scrim');
 const newChatBtn = document.getElementById('new-chat');
-const historyList = document.getElementById('history-list');
+const searchInput = document.getElementById('history-search');
+const historyGroups = document.getElementById('history-groups');
 const historyEmpty = document.getElementById('history-empty');
 const chatTitle = document.getElementById('chat-title');
+
+const suggestionsBox = document.getElementById('suggestions');
+const quickChips = document.getElementById('quick-chips');
+
+const themeToggle = document.getElementById('theme-toggle');
+const themeColorMeta = document.getElementById('theme-color');
+
+const moreBtn = document.getElementById('more-btn');
+const moreMenu = document.getElementById('more-menu');
+const menuRename = document.getElementById('menu-rename');
+const menuDelete = document.getElementById('menu-delete');
+const menuClear = document.getElementById('menu-clear');
+
+const profileBtn = document.getElementById('profile-btn');
+const profilePopover = document.getElementById('profile-popover');
+const profileInitials = document.getElementById('profile-initials');
+const profileName = document.getElementById('profile-name');
+const profileSub = document.getElementById('profile-sub');
+const profileNameInput = document.getElementById('profile-name-input');
+const profileSubInput = document.getElementById('profile-sub-input');
+const profileSave = document.getElementById('profile-save');
+const profileCancel = document.getElementById('profile-cancel');
 
 // Batas dijaga di sisi klien juga supaya kesalahan ketahuan sebelum berkas diunggah.
 const MAX_FILES = 6;
@@ -27,9 +57,43 @@ const MAX_TURNS_WITH_FILES = 3;
 
 // Riwayat percakapan disimpan di browser. Isi berkas (base64) sengaja tidak ikut
 // disimpan karena akan menghabiskan kuota localStorage dalam beberapa lampiran.
+// Nama kuncinya dipertahankan dari versi sebelumnya supaya riwayat lama tidak hilang.
 const STORAGE_KEY = 'proposa.chats.v1';
+const THEME_KEY = 'ta.theme';
+const PROFILE_KEY = 'ta.profile';
+
 const MAX_CONVERSATIONS = 40;
 const DEFAULT_TITLE = 'Percakapan baru';
+const DEFAULT_STATUS = 'Pendamping Proposal TA';
+
+// Pintasan pembuka. Dipakai dua kali: sebagai kartu di layar sapaan dan
+// sebagai chip di atas kolom input.
+const STARTERS = [
+  {
+    icon: 'i-bulb',
+    title: 'Bantu cari judul TA',
+    desc: 'Brainstorming ide judul sesuai bidang & minatmu',
+    prompt: 'Aku butuh ide judul Tugas Akhir. Tanyakan dulu apa yang perlu kamu tahu soal bidang dan minatku.',
+  },
+  {
+    icon: 'i-check-list',
+    title: 'Susun rumusan masalah',
+    desc: 'Rumuskan masalah yang tajam dari latar belakang',
+    prompt: 'Aku mau menyusun rumusan masalah dari latar belakang yang sudah kutulis. Mulai dari mana?',
+  },
+  {
+    icon: 'i-doc',
+    title: 'Review Bab 1 saya',
+    desc: 'Beri masukan struktur & kejelasan latar belakang',
+    prompt: 'Aku ingin kamu me-review draf Bab 1 punyaku. Apa saja yang perlu kusiapkan sebelum mengirim drafnya?',
+  },
+  {
+    icon: 'i-spark',
+    title: 'Tentukan metodologi',
+    desc: 'Pilih metode penelitian yang tepat untuk topikmu',
+    prompt: 'Bantu aku menentukan metodologi penelitian yang cocok untuk topik TA-ku.',
+  },
+];
 
 // Sebagian berkas (.md misalnya) sering datang tanpa type dari browser,
 // jadi ekstensinya dipakai sebagai cadangan.
@@ -64,10 +128,175 @@ let noteTimer;
 let busy = false;
 let sending = false;
 let storageWarned = false;
+let searchQuery = '';
 
 const mobileQuery = window.matchMedia('(max-width: 820px)');
+const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-/* ---------- Lampiran ---------- */
+/* ============================================================
+   Ikon
+   ============================================================ */
+
+// Membuat <svg><use href="#id"/></svg> dari kumpulan simbol di index.html.
+function icon(id) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', `#${id}`);
+  svg.appendChild(use);
+  return svg;
+}
+
+/* ============================================================
+   Tema terang / gelap
+   ============================================================ */
+
+// Tema yang sedang terlihat: pilihan manual kalau ada, kalau tidak ikut sistem.
+function currentTheme() {
+  const chosen = document.documentElement.dataset.theme;
+  if (chosen === 'light' || chosen === 'dark') return chosen;
+  return darkQuery.matches ? 'dark' : 'light';
+}
+
+function syncThemeButton() {
+  const dark = currentTheme() === 'dark';
+  themeToggle.setAttribute('aria-label', dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap');
+  // Warna bilah alamat di browser ponsel ikut berubah.
+  themeColorMeta.setAttribute('content', dark ? '#0a0a0b' : '#ffffff');
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem(THEME_KEY, next);
+  } catch (error) {
+    // Mode privat: temanya tetap berubah, hanya tidak diingat setelah ditutup.
+  }
+  syncThemeButton();
+}
+
+// Selama belum ada pilihan manual, tampilan ikut setelan sistem yang berubah.
+darkQuery.addEventListener('change', () => {
+  if (!document.documentElement.dataset.theme) syncThemeButton();
+});
+
+themeToggle.addEventListener('click', toggleTheme);
+
+/* ============================================================
+   Profil pemakai
+   ============================================================ */
+
+let profile = { name: '', sub: '' };
+
+function initialsOf(name) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return 'TA';
+  const letters = words.slice(0, 2).map((word) => word[0]);
+  return letters.join('').toUpperCase();
+}
+
+function renderProfile() {
+  profileName.textContent = profile.name || 'Mahasiswa';
+  profileSub.textContent = profile.sub || 'Atur nama & program studi';
+  profileInitials.textContent = initialsOf(profile.name);
+}
+
+function loadProfile() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+    if (saved && typeof saved === 'object') {
+      profile.name = String(saved.name || '').slice(0, 40);
+      profile.sub = String(saved.sub || '').slice(0, 48);
+    }
+  } catch (error) {
+    profile = { name: '', sub: '' };
+  }
+  renderProfile();
+}
+
+function saveProfile() {
+  profile.name = profileNameInput.value.trim().slice(0, 40);
+  profile.sub = profileSubInput.value.trim().slice(0, 48);
+
+  try {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  } catch (error) {
+    showNote('Profil tidak bisa disimpan di browser ini.');
+  }
+
+  renderProfile();
+  closePopover(true);
+}
+
+/* ============================================================
+   Popover: menu titik tiga dan form profil
+   ============================================================ */
+
+let openPop = null;
+
+function openPopover(pop, trigger) {
+  closePopover(false);
+  pop.hidden = false;
+  trigger.setAttribute('aria-expanded', 'true');
+  openPop = { pop, trigger };
+}
+
+function closePopover(returnFocus) {
+  if (!openPop) return;
+  openPop.pop.hidden = true;
+  openPop.trigger.setAttribute('aria-expanded', 'false');
+  if (returnFocus) openPop.trigger.focus();
+  openPop = null;
+}
+
+// Klik di luar menutup popover yang sedang terbuka.
+document.addEventListener('pointerdown', (e) => {
+  if (!openPop) return;
+  if (openPop.pop.contains(e.target) || openPop.trigger.contains(e.target)) return;
+  closePopover(false);
+});
+
+moreBtn.addEventListener('click', () => {
+  if (openPop && openPop.pop === moreMenu) {
+    closePopover(true);
+    return;
+  }
+  // Dua menu teratas tidak berlaku saat belum ada percakapan yang dibuka.
+  const convo = activeConvo();
+  menuRename.disabled = !convo;
+  menuDelete.disabled = !convo;
+  menuClear.disabled = conversations.length === 0;
+  openPopover(moreMenu, moreBtn);
+});
+
+profileBtn.addEventListener('click', () => {
+  if (openPop && openPop.pop === profilePopover) {
+    closePopover(true);
+    return;
+  }
+  profileNameInput.value = profile.name;
+  profileSubInput.value = profile.sub;
+  openPopover(profilePopover, profileBtn);
+  profileNameInput.focus();
+});
+
+profileSave.addEventListener('click', saveProfile);
+profileCancel.addEventListener('click', () => closePopover(true));
+
+// Enter di dalam form profil menyimpan, bukan mengirim pesan.
+profilePopover.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveProfile();
+  }
+});
+
+/* ============================================================
+   Lampiran
+   ============================================================ */
 
 function mimeOf(file) {
   if (file.type && ALLOWED_MIME.has(file.type)) return file.type;
@@ -184,10 +413,10 @@ function renderPreview() {
       thumb.alt = '';
       chip.appendChild(thumb);
     } else {
-      const icon = document.createElement('span');
-      icon.className = 'chip-icon';
-      icon.textContent = extLabel(item.file.name);
-      chip.appendChild(icon);
+      const badge = document.createElement('span');
+      badge.className = 'chip-icon';
+      badge.textContent = extLabel(item.file.name);
+      chip.appendChild(badge);
     }
 
     const meta = document.createElement('span');
@@ -229,10 +458,12 @@ function readAsBase64(file) {
   });
 }
 
-/* ---------- Bubble percakapan ---------- */
+/* ============================================================
+   Bubble percakapan
+   ============================================================ */
 
 function scrollToBottom() {
-  chatBox.scrollTop = chatBox.scrollHeight;
+  scroller.scrollTop = scroller.scrollHeight;
 }
 
 function attachmentNode(attachment) {
@@ -251,15 +482,15 @@ function attachmentNode(attachment) {
   const file = document.createElement('span');
   file.className = 'msg-file';
 
-  const icon = document.createElement('span');
-  icon.className = 'chip-icon';
-  icon.textContent = extLabel(attachment.name);
+  const badge = document.createElement('span');
+  badge.className = 'chip-icon';
+  badge.textContent = extLabel(attachment.name);
 
   const name = document.createElement('span');
   name.className = 'chip-name';
   name.textContent = attachment.name;
 
-  file.append(icon, name);
+  file.append(badge, name);
   return file;
 }
 
@@ -281,6 +512,7 @@ function appendMessage(sender, text, attachments = []) {
   msg.appendChild(body);
 
   chatBox.appendChild(msg);
+  app.classList.add('has-messages');
   scrollToBottom();
   return msg;
 }
@@ -325,7 +557,9 @@ function setMessageText(msg, text) {
   scrollToBottom();
 }
 
-/* ---------- Penyimpanan riwayat ---------- */
+/* ============================================================
+   Penyimpanan riwayat
+   ============================================================ */
 
 function newId() {
   if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -436,7 +670,9 @@ function deriveTitle(text, files) {
   return base.length > 46 ? `${base.slice(0, 45).trimEnd()}…` : base;
 }
 
-/* ---------- Riwayat yang dikirim ke server ---------- */
+/* ============================================================
+   Riwayat yang dikirim ke server
+   ============================================================ */
 
 // Isi berkas hanya dibawa untuk beberapa giliran terakhir. Giliran yang lebih lama
 // (atau yang berkasnya sudah hilang setelah muat ulang) diganti catatan nama berkas
@@ -487,13 +723,190 @@ function pruneAttachmentData(convo) {
   }
 }
 
-/* ---------- Tampilan percakapan dan riwayat ---------- */
+/* ============================================================
+   Daftar riwayat: pencarian, pengelompokan, cuplikan
+   ============================================================ */
+
+// Label kelompok dihitung dari selisih hari kalender, bukan selisih jam, supaya
+// pesan pukul 23.00 kemarin tidak ikut masuk "Hari ini".
+function groupLabel(timestamp) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfThen = new Date(timestamp);
+  startOfThen.setHours(0, 0, 0, 0);
+
+  const days = Math.round((startOfToday - startOfThen) / 86400000);
+
+  if (days <= 0) return 'Hari ini';
+  if (days === 1) return 'Kemarin';
+  if (days < 7) return '7 hari terakhir';
+  if (days < 30) return '30 hari terakhir';
+  return 'Lebih lama';
+}
+
+// Cuplikan di bawah judul: pesan terakhir yang ada isinya.
+function previewOf(convo) {
+  for (let i = convo.history.length - 1; i >= 0; i--) {
+    const item = convo.history[i];
+    if (item.text && item.text.trim()) return item.text.replace(/\s+/g, ' ').trim();
+    if (item.files && item.files.length) {
+      return item.files.map((file) => file.name).join(', ');
+    }
+  }
+  return 'Belum ada pesan.';
+}
+
+function matchesSearch(convo) {
+  if (!searchQuery) return true;
+  if (convo.title.toLowerCase().includes(searchQuery)) return true;
+  return convo.history.some((item) => item.text && item.text.toLowerCase().includes(searchQuery));
+}
+
+function historyItemNode(convo) {
+  const active = convo.id === activeId;
+
+  const item = document.createElement('li');
+  item.className = active ? 'history-item is-active' : 'history-item';
+
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'history-open';
+  open.title = convo.title;
+  if (active) open.setAttribute('aria-current', 'true');
+  open.addEventListener('click', () => selectConversation(convo.id));
+
+  const meta = document.createElement('span');
+  meta.className = 'history-meta';
+
+  const title = document.createElement('span');
+  title.className = 'history-title';
+  title.textContent = convo.title;
+
+  const preview = document.createElement('span');
+  preview.className = 'history-preview';
+  preview.textContent = previewOf(convo);
+
+  meta.append(title, preview);
+  open.append(icon('i-chat'), meta);
+
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'history-delete';
+  remove.textContent = '×';
+  remove.setAttribute('aria-label', `Hapus percakapan: ${convo.title}`);
+  remove.addEventListener('click', () => deleteConversation(convo.id));
+
+  item.append(open, remove);
+  return item;
+}
+
+function renderHistoryList() {
+  historyGroups.replaceChildren();
+
+  const visible = conversations.filter(matchesSearch);
+
+  if (!visible.length) {
+    historyEmpty.hidden = false;
+    historyEmpty.textContent = conversations.length
+      ? 'Tidak ada percakapan yang cocok.'
+      : 'Percakapanmu akan muncul di sini.';
+    return;
+  }
+
+  historyEmpty.hidden = true;
+
+  // conversations sudah urut dari yang terbaru, jadi kelompoknya ikut urut sendiri.
+  let currentLabel = null;
+  let list = null;
+
+  for (const convo of visible) {
+    const label = groupLabel(convo.updatedAt);
+
+    if (label !== currentLabel) {
+      currentLabel = label;
+
+      const group = document.createElement('div');
+      group.className = 'history-group';
+
+      const heading = document.createElement('p');
+      heading.className = 'history-label';
+      heading.textContent = label;
+
+      list = document.createElement('ul');
+      list.className = 'history-list';
+      list.setAttribute('aria-label', label);
+
+      group.append(heading, list);
+      historyGroups.appendChild(group);
+    }
+
+    list.appendChild(historyItemNode(convo));
+  }
+}
+
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.trim().toLowerCase();
+  renderHistoryList();
+});
+
+/* ============================================================
+   Pintasan pertanyaan
+   ============================================================ */
+
+// Pintasan hanya mengisi kolom input, tidak langsung mengirim, supaya mahasiswa
+// bisa menambahkan bidang atau topiknya dulu sebelum bertanya.
+function useStarter(prompt) {
+  input.value = prompt;
+  input.focus();
+  input.setSelectionRange(prompt.length, prompt.length);
+}
+
+function renderStarters() {
+  for (const starter of STARTERS) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'suggestion';
+
+    const iconBox = document.createElement('span');
+    iconBox.className = 'suggestion-icon';
+    iconBox.appendChild(icon(starter.icon));
+
+    const text = document.createElement('span');
+    text.className = 'suggestion-text';
+
+    const title = document.createElement('span');
+    title.className = 'suggestion-title';
+    title.textContent = starter.title;
+
+    const desc = document.createElement('span');
+    desc.className = 'suggestion-desc';
+    desc.textContent = starter.desc;
+
+    text.append(title, desc);
+    card.append(iconBox, text);
+    card.addEventListener('click', () => useStarter(starter.prompt));
+    suggestionsBox.appendChild(card);
+
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'quick-chip';
+    chip.textContent = starter.title;
+    chip.addEventListener('click', () => useStarter(starter.prompt));
+    quickChips.appendChild(chip);
+  }
+}
+
+/* ============================================================
+   Tampilan percakapan
+   ============================================================ */
 
 function setBusy(state) {
   busy = state;
   form.classList.toggle('is-busy', state);
   input.disabled = state;
   attachBtn.disabled = state;
+  micBtn.disabled = state;
   form.querySelector('button[type="submit"]').disabled = state;
 }
 
@@ -504,42 +917,14 @@ function syncBusy() {
   setBusy(sending || Boolean(convo && convo.waiting));
 }
 
-function renderHistoryList() {
-  historyList.replaceChildren();
-  historyEmpty.hidden = conversations.length > 0;
-
-  for (const convo of conversations) {
-    const active = convo.id === activeId;
-
-    const item = document.createElement('li');
-    item.className = active ? 'history-item is-active' : 'history-item';
-
-    const open = document.createElement('button');
-    open.type = 'button';
-    open.className = 'history-open';
-    open.textContent = convo.title;
-    open.title = convo.title;
-    if (active) open.setAttribute('aria-current', 'true');
-    open.addEventListener('click', () => selectConversation(convo.id));
-
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'history-delete';
-    remove.textContent = '×';
-    remove.setAttribute('aria-label', `Hapus percakapan: ${convo.title}`);
-    remove.addEventListener('click', () => deleteConversation(convo.id));
-
-    item.append(open, remove);
-    historyList.appendChild(item);
-  }
-}
-
 // Menggambar ulang panel chat dari percakapan aktif.
 function showConversation() {
   const convo = activeConvo();
 
   chatBox.replaceChildren();
-  chatTitle.textContent = convo ? convo.title : DEFAULT_TITLE;
+  chatTitle.textContent = convo ? convo.title : DEFAULT_STATUS;
+  // Kartu sapaan hanya tampil di percakapan yang masih kosong.
+  app.classList.toggle('has-messages', Boolean(convo && convo.history.length));
 
   if (convo) {
     for (const item of convo.history) {
@@ -605,7 +990,51 @@ function deleteConversation(id) {
   newChatBtn.focus();
 }
 
-/* ---------- Laci riwayat di layar sempit ---------- */
+function renameConversation() {
+  const convo = activeConvo();
+  if (!convo) return;
+
+  const name = window.prompt('Nama percakapan:', convo.title);
+  if (name === null) return;
+
+  const trimmed = name.trim().slice(0, 60);
+  if (!trimmed) return;
+
+  convo.title = trimmed;
+  chatTitle.textContent = trimmed;
+  renderHistoryList();
+  saveState();
+}
+
+function clearAllConversations() {
+  if (!conversations.length) return;
+  if (!window.confirm(`Hapus semua ${conversations.length} percakapan? Tindakan ini tidak bisa dibatalkan.`)) return;
+
+  conversations = [];
+  activeId = null;
+  clearPending();
+  showConversation();
+  saveState();
+}
+
+menuRename.addEventListener('click', () => {
+  closePopover(false);
+  renameConversation();
+});
+
+menuDelete.addEventListener('click', () => {
+  closePopover(false);
+  if (activeId) deleteConversation(activeId);
+});
+
+menuClear.addEventListener('click', () => {
+  closePopover(false);
+  clearAllConversations();
+});
+
+/* ============================================================
+   Laci riwayat di layar sempit
+   ============================================================ */
 
 function openSidebar() {
   document.body.classList.add('sidebar-open');
@@ -630,7 +1059,13 @@ scrim.addEventListener('click', () => closeSidebar(true));
 newChatBtn.addEventListener('click', startNewConversation);
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeSidebar(true);
+  if (e.key !== 'Escape') return;
+  // Popover ditutup lebih dulu; laci baru menyusul kalau tidak ada popover terbuka.
+  if (openPop) {
+    closePopover(true);
+    return;
+  }
+  closeSidebar(true);
 });
 
 // Kalau jendela dilebarkan saat laci terbuka, laci tidak perlu ditutup manual lagi.
@@ -638,7 +1073,77 @@ mobileQuery.addEventListener('change', (e) => {
   if (!e.matches) closeSidebar(false);
 });
 
-/* ---------- Kirim ---------- */
+/* ============================================================
+   Dikte suara
+   ============================================================ */
+
+const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let micBase = '';
+
+function stopMicUi() {
+  micBtn.classList.remove('is-recording');
+  micBtn.setAttribute('aria-label', 'Dikte dengan suara');
+  recognition = null;
+}
+
+function startMic() {
+  recognition = new SpeechRecognitionApi();
+  recognition.lang = 'id-ID';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  // Hasil dikte ditambahkan di belakang teks yang sudah diketik, bukan menimpanya.
+  micBase = input.value.trim();
+
+  recognition.onresult = (e) => {
+    let text = '';
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    input.value = (micBase ? `${micBase} ` : '') + text.trim();
+  };
+
+  recognition.onerror = (e) => {
+    stopMicUi();
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      showNote('Izin mikrofon ditolak. Aktifkan lewat setelan situs di browser.');
+    } else if (e.error === 'no-speech') {
+      showNote('Tidak ada suara yang terdengar. Coba lagi.');
+    } else if (e.error !== 'aborted') {
+      showNote('Pengenalan suara gagal dijalankan.');
+    }
+  };
+
+  recognition.onend = () => {
+    stopMicUi();
+    input.focus();
+  };
+
+  try {
+    recognition.start();
+  } catch (error) {
+    stopMicUi();
+    return;
+  }
+
+  micBtn.classList.add('is-recording');
+  micBtn.setAttribute('aria-label', 'Hentikan dikte');
+}
+
+// Tombol mikrofon hanya ditampilkan kalau browsernya memang mendukung.
+if (SpeechRecognitionApi) {
+  micBtn.hidden = false;
+  micBtn.addEventListener('click', () => {
+    if (recognition) {
+      recognition.stop();
+      return;
+    }
+    startMic();
+  });
+}
+
+/* ============================================================
+   Kirim
+   ============================================================ */
 
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -670,7 +1175,7 @@ form.addEventListener('submit', async function (e) {
     return;
   }
 
-  // Percakapan baru baru dibuat sekarang, supaya tombol "Percakapan baru"
+  // Percakapan baru baru dibuat sekarang, supaya tombol "Percakapan Baru"
   // tidak meninggalkan entri kosong di riwayat.
   let convo = activeConvo();
   if (!convo) {
@@ -739,7 +1244,8 @@ form.addEventListener('submit', async function (e) {
 
   const movedUp = conversations[0] !== convo;
   touch(convo);
-  if (movedUp) renderHistoryList();
+  // Cuplikan di sidebar ikut berubah begitu jawaban masuk, jadi selalu digambar ulang.
+  renderHistoryList();
   saveState();
 
   if (convo.id === activeId) {
@@ -756,7 +1262,9 @@ form.addEventListener('submit', async function (e) {
   }
 });
 
-/* ---------- Cara melampirkan ---------- */
+/* ============================================================
+   Cara melampirkan
+   ============================================================ */
 
 attachBtn.addEventListener('click', () => fileInput.click());
 
@@ -804,7 +1312,12 @@ mainPane.addEventListener('drop', (e) => {
 window.addEventListener('dragover', (e) => e.preventDefault());
 window.addEventListener('drop', (e) => e.preventDefault());
 
-/* ---------- Mulai ---------- */
+/* ============================================================
+   Mulai
+   ============================================================ */
 
+syncThemeButton();
+loadProfile();
+renderStarters();
 loadState();
 showConversation();

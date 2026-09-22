@@ -3,41 +3,157 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Proposa — Asisten Proposal Tugas Akhir</title>
-  <meta name="description" content="Asisten diskusi untuk menyusun proposal Tugas Akhir: latar belakang, rumusan masalah, sampai metodologi." />
-  <link rel="icon" type="image/png" href="Iogo.png" />
+  <title>TA Assistant — Pendamping Proposal Tugas Akhir</title>
+  <meta name="description" content="Pendamping AI untuk menyusun Proposal Tugas Akhir: ide judul, latar belakang, rumusan masalah, sampai metodologi." />
+  <meta name="theme-color" content="#ffffff" id="theme-color" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script>
+    // Dijalankan sebelum halaman digambar supaya tema pilihan tidak berkedip
+    // dari terang ke gelap saat dimuat.
+    try {
+      var saved = localStorage.getItem('ta.theme');
+      if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+    } catch (e) {}
+  </script>
 </head>
 <body>
-  <aside class="sidebar" id="sidebar" aria-label="Riwayat percakapan">
+  <!-- Kumpulan ikon. Dipakai ulang lewat <use> supaya tiap bentuk hanya ditulis sekali. -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 4 2 9l10 5 10-5-10-5Z" />
+      <path d="M6 11.6V16c0 1.6 2.7 2.9 6 2.9s6-1.3 6-2.9v-4.4" />
+      <path d="M21.4 9.7v5.1" />
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M12 5v14M5 12h14" />
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" />
+    </symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.5 11.6c0 4.4-3.8 8-8.5 8a9.3 9.3 0 0 1-3.2-.6L3.5 20.5l1.6-4.6a7.8 7.8 0 0 1-1.6-4.7c0-4.4 3.8-8 8.5-8s8.5 3.6 8.5 8Z" />
+    </symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5 18h5M10.5 21h3" />
+      <path d="M12 3a6 6 0 0 0-3.8 10.6c.5.5.8 1.1.8 1.8v.6h6v-.6c0-.7.3-1.3.8-1.8A6 6 0 0 0 12 3Z" />
+    </symbol>
+    <symbol id="i-check-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 6h10M10 12h10M10 18h10" />
+      <path d="m3 6 1.4 1.4L7.2 4.6M3 12l1.4 1.4 2.8-2.8M3 18l1.4 1.4 2.8-2.8" />
+    </symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
+      <path d="M14 3v5h5M9 13h6M9 17h4" />
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m10 3 1.7 4.3L16 9l-4.3 1.7L10 15l-1.7-4.3L4 9l4.3-1.7L10 3Z" />
+      <path d="m18 13 .9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1Z" />
+    </symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 11.5 12.4 19a4.6 4.6 0 0 1-6.5-6.5l7.6-7.6a3.1 3.1 0 0 1 4.4 4.4l-7.6 7.6a1.5 1.5 0 0 1-2.2-2.2l7-7" />
+    </symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5" />
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" />
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z" />
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2.5 12h2M19.5 12h2M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5" />
+    </symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="5" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="12" cy="19" r="1.7" />
+    </symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3.1" />
+      <path d="m19.1 14.2.1.2a1.9 1.9 0 0 0 .4 2.1 1.7 1.7 0 1 1-2.4 2.4 1.9 1.9 0 0 0-2.1-.4 1.9 1.9 0 0 0-1.1 1.7 1.7 1.7 0 1 1-3.4 0 1.9 1.9 0 0 0-1.2-1.7 1.9 1.9 0 0 0-2.1.4 1.7 1.7 0 1 1-2.4-2.4 1.9 1.9 0 0 0 .4-2.1 1.9 1.9 0 0 0-1.7-1.1 1.7 1.7 0 1 1 0-3.4 1.9 1.9 0 0 0 1.7-1.2 1.9 1.9 0 0 0-.4-2.1 1.7 1.7 0 1 1 2.4-2.4 1.9 1.9 0 0 0 2.1.4h.1A1.9 1.9 0 0 0 10.6 3a1.7 1.7 0 1 1 3.4 0 1.9 1.9 0 0 0 1.1 1.7 1.9 1.9 0 0 0 2.1-.4 1.7 1.7 0 1 1 2.4 2.4 1.9 1.9 0 0 0-.4 2.1v.1a1.9 1.9 0 0 0 1.7 1.1 1.7 1.7 0 1 1 0 3.4 1.9 1.9 0 0 0-1.8 1.1Z" />
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <path d="M6 6l12 12M18 6 6 18" />
+    </symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 7h16M10 4h4M9 7v12M15 7v12M6 7l.8 13a1 1 0 0 0 1 1h8.4a1 1 0 0 0 1-1L18 7" />
+    </symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z" /><path d="M14.5 5.5l4 4" />
+    </symbol>
+  </svg>
+
+  <!-- ---------- Sidebar riwayat ---------- -->
+  <aside class="sidebar" id="sidebar" aria-label="Daftar percakapan">
     <div class="sidebar-head">
       <a class="brand" href="/">
-        <img class="brand-mark" src="Iogo.png" alt="Proposa AI" width="237" height="34" />
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-cap" /></svg></span>
+        <span class="brand-text">
+          <span class="brand-name">TA Assistant</span>
+          <span class="brand-sub">Proposa</span>
+        </span>
       </a>
 
-      <button type="button" id="sidebar-close" class="icon-btn sidebar-close" aria-label="Tutup riwayat">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      <button type="button" id="sidebar-close" class="icon-btn sidebar-close" aria-label="Tutup daftar percakapan">
+        <svg class="icon" aria-hidden="true"><use href="#i-x" /></svg>
       </button>
     </div>
 
     <button type="button" id="new-chat" class="new-chat">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-      Percakapan baru
+      <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>
+      Percakapan Baru
     </button>
 
-    <nav class="history" aria-label="Daftar percakapan">
-      <p class="history-label" id="history-label">Riwayat</p>
-      <ul id="history-list" class="history-list" aria-labelledby="history-label"></ul>
+    <div class="search">
+      <svg class="icon search-icon" aria-hidden="true"><use href="#i-search" /></svg>
+      <input type="search" id="history-search" placeholder="Cari percakapan..." aria-label="Cari percakapan" autocomplete="off" />
+    </div>
+
+    <nav class="history" id="history" aria-label="Riwayat percakapan">
+      <div id="history-groups"></div>
+      <p id="history-empty" class="history-empty">Percakapanmu akan muncul di sini.</p>
     </nav>
+
+    <!-- Identitas pemakai. Bisa diubah lewat tombol gerigi; disimpan di browser. -->
+    <div class="sidebar-foot">
+      <span class="avatar" id="profile-initials" aria-hidden="true">TA</span>
+      <span class="profile-text">
+        <span class="profile-name" id="profile-name">Mahasiswa</span>
+        <span class="profile-sub" id="profile-sub">Atur nama & program studi</span>
+      </span>
+      <button type="button" id="profile-btn" class="icon-btn" aria-label="Ubah profil" aria-haspopup="dialog" aria-expanded="false">
+        <svg class="icon" aria-hidden="true"><use href="#i-gear" /></svg>
+      </button>
+
+      <!-- Form profil, tersembunyi sampai tombol gerigi ditekan. -->
+      <div class="popover profile-popover" id="profile-popover" role="dialog" aria-label="Ubah profil" hidden>
+        <label class="field">
+          <span class="field-label">Nama</span>
+          <input type="text" id="profile-name-input" maxlength="40" autocomplete="name" />
+        </label>
+        <label class="field">
+          <span class="field-label">Program studi</span>
+          <input type="text" id="profile-sub-input" maxlength="48" />
+        </label>
+        <div class="popover-actions">
+          <button type="button" class="btn-ghost" id="profile-cancel">Batal</button>
+          <button type="button" class="btn-solid" id="profile-save">Simpan</button>
+        </div>
+      </div>
+    </div>
   </aside>
 
   <div class="scrim" id="scrim"></div>
 
   <div class="main">
-    <!-- Muncul hanya saat berkas diseret ke area chat. -->
     <div class="drop-hint" aria-hidden="true">
       <span>Lepaskan berkas untuk melampirkan</span>
     </div>
@@ -47,72 +163,116 @@
         type="button"
         id="sidebar-toggle"
         class="icon-btn menu-btn"
-        aria-label="Buka riwayat percakapan"
+        aria-label="Buka daftar percakapan"
         aria-controls="sidebar"
         aria-expanded="false"
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <svg class="icon" aria-hidden="true"><use href="#i-menu" /></svg>
       </button>
-      <p class="chat-title" id="chat-title">Percakapan baru</p>
-    </header>
 
-    <main class="app">
-      <div class="intro">
-        <h1 class="title">Pendamping menyusun proposal Tugas Akhir</h1>
-        <p class="subtitle">
-          Diskusikan latar belakang, rumusan masalah, hingga metodologi.
-          Kamu yang menulis, aku yang membantu menajamkan.
+      <div class="topbar-text">
+        <p class="topbar-status">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="chat-title">Pendamping Proposal TA</span>
         </p>
       </div>
 
-      <section class="card" aria-label="Ruang diskusi proposal">
+      <div class="topbar-actions">
+        <button type="button" id="theme-toggle" class="icon-btn" aria-label="Ganti ke mode gelap">
+          <svg class="icon icon-moon" aria-hidden="true"><use href="#i-moon" /></svg>
+          <svg class="icon icon-sun" aria-hidden="true"><use href="#i-sun" /></svg>
+        </button>
+
+        <div class="menu-wrap">
+          <button type="button" id="more-btn" class="icon-btn" aria-label="Menu percakapan" aria-haspopup="menu" aria-expanded="false">
+            <svg class="icon" aria-hidden="true"><use href="#i-more" /></svg>
+          </button>
+
+          <div class="popover menu" id="more-menu" role="menu" hidden>
+            <button type="button" role="menuitem" id="menu-rename">
+              <svg class="icon" aria-hidden="true"><use href="#i-pencil" /></svg> Ganti nama percakapan
+            </button>
+            <button type="button" role="menuitem" id="menu-delete">
+              <svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg> Hapus percakapan ini
+            </button>
+            <hr />
+            <button type="button" role="menuitem" id="menu-clear" class="is-danger">
+              <svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg> Hapus semua riwayat
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="app" id="app">
+      <div class="scroller" id="scroller">
+        <!-- Layar sapaan. Disembunyikan begitu percakapan punya pesan. -->
+        <div class="intro" id="intro">
+          <div class="hero-mark"><svg class="icon" aria-hidden="true"><use href="#i-cap" /></svg></div>
+
+          <h1 class="title">Halo! Mau mulai dari mana untuk proposal TA-mu?</h1>
+          <p class="subtitle">
+            Aku TA Assistant, pendamping AI-mu untuk menyusun Proposal Tugas Akhir —
+            dari brainstorming judul, latar belakang, rumusan masalah, sampai metodologi.
+            Pilih salah satu untuk memulai.
+          </p>
+
+          <div class="suggestions" id="suggestions"></div>
+        </div>
+
         <div
           id="chat-box"
           class="chat-box"
           role="log"
           aria-live="polite"
-          aria-label="Riwayat percakapan"
+          aria-label="Isi percakapan"
         ></div>
-
-        <form id="chat-form" class="composer">
-          <div id="attachment-preview" class="attachment-preview" hidden></div>
-
-          <p id="composer-note" class="composer-note" role="status" hidden></p>
-
-          <div class="composer-row">
-            <input
-              type="file"
-              id="file-input"
-              class="visually-hidden"
-              tabindex="-1"
-              multiple
-              accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf,text/plain,text/markdown,text/csv,application/json,.png,.jpg,.jpeg,.webp,.heic,.heif,.pdf,.txt,.md,.csv,.json"
-            />
-
-            <button type="button" id="attach-btn" class="icon-btn" aria-label="Lampirkan file atau foto">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 11.5 12.4 19a4.6 4.6 0 0 1-6.5-6.5l7.6-7.6a3.1 3.1 0 0 1 4.4 4.4l-7.6 7.6a1.5 1.5 0 0 1-2.2-2.2l7-7" />
-              </svg>
-            </button>
-
-            <input
-              type="text"
-              id="user-input"
-              placeholder="Tanyakan soal proposalmu"
-              autocomplete="off"
-            />
-
-            <button type="submit" class="send-btn" aria-label="Kirim pesan">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" />
-              </svg>
-            </button>
-          </div>
-        </form>
-      </section>
+      </div>
     </main>
 
-    <p class="footnote">Jawaban dibuat oleh AI dan bisa keliru. Verifikasi sitasi dan data sebelum dipakai.</p>
+    <div class="composer-wrap">
+      <!-- Pintasan yang sama dengan kartu di atas, tetap ada selama percakapan. -->
+      <div class="quick-chips" id="quick-chips" aria-label="Pertanyaan pembuka"></div>
+
+      <form id="chat-form" class="composer">
+        <div id="attachment-preview" class="attachment-preview" hidden></div>
+
+        <p id="composer-note" class="composer-note" role="status" hidden></p>
+
+        <div class="composer-row">
+          <input
+            type="file"
+            id="file-input"
+            class="visually-hidden"
+            tabindex="-1"
+            multiple
+            accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf,text/plain,text/markdown,text/csv,application/json,.png,.jpg,.jpeg,.webp,.heic,.heif,.pdf,.txt,.md,.csv,.json"
+          />
+
+          <button type="button" id="attach-btn" class="icon-btn" aria-label="Lampirkan file atau foto">
+            <svg class="icon" aria-hidden="true"><use href="#i-clip" /></svg>
+          </button>
+
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Tanyakan apa saja soal proposal TA-mu..."
+            autocomplete="off"
+          />
+
+          <!-- Disembunyikan oleh script.js kalau browsernya tidak punya pengenalan suara. -->
+          <button type="button" id="mic-btn" class="icon-btn" aria-label="Dikte dengan suara" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-mic" /></svg>
+          </button>
+
+          <button type="submit" class="send-btn" aria-label="Kirim pesan">
+            <svg class="icon" aria-hidden="true"><use href="#i-send" /></svg>
+          </button>
+        </div>
+      </form>
+
+      <p class="footnote">TA Assistant dapat keliru. Selalu verifikasi dengan dosen pembimbingmu.</p>
+    </div>
   </div>
 
   <script src="script.js"></script>
